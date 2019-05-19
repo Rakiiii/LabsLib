@@ -1,0 +1,112 @@
+#ifndef PICTUREPLACE_TEMPLATESHEET_HPP
+
+#define PICTUREPLACE_TEMPLATESHEET_HPP
+
+#include "exceptoin.hpp"
+#include "date.hpp"
+
+
+
+template<template<class...> class  Container , class myType ,int defMaxSize = 1>
+class Sheet
+{
+	private:
+		Date mDate;
+
+		size_t maxSize;
+
+		size_t curentSize;
+
+		Container<myType> value;
+	
+	public:
+		Sheet();
+		Sheet(Date,const size_t);
+		Sheet(Sheet&) = delete;
+		
+		Sheet& operator=(Sheet&) = delete;
+
+		virtual ~Sheet() = default;
+
+		Date getDate()const;
+		Sheet& setDate(Date);
+
+		myType& operator[](int);
+
+		Sheet& insert(myType,const int);
+
+		int search(const myType&)const;
+		
+		Sheet& replace(myType,const int);
+};
+
+
+template<template<class...> class Container , class myType , int defMaxSize>
+Sheet<Container , myType , defMaxSize>::Sheet()
+{
+	if(defMaxSize <= 0) throw TemplateSheetIncorrectMaxSize();
+	mDate = Date();
+	maxSize = defMaxSize;
+	curentSize = 0;
+	value = Container<myType>();
+}
+
+template<template<class...> class Container , class myType , int defMaxSize>
+Sheet<Container , myType , defMaxSize>::Sheet(Date _date, const size_t maxSize)
+{
+	mDate = _date;
+	this->maxSize = maxSize;
+	curentSize = 0;
+	value = Container<myType>();
+}
+
+template<template<class...> class Container , class myType , int defMaxSize>
+Date Sheet<Container , myType , defMaxSize>::getDate()const 
+{
+	return mDate;
+}
+
+template<template<class...> class Container , class myType , int defMaxSize>
+Sheet<Container , myType , defMaxSize>& Sheet<Container , myType , defMaxSize>::setDate(Date _date)
+{
+	mDate = _date;
+	return *this;
+}
+
+template<template<class...> class Container , class myType , int defMaxSize>
+myType& Sheet<Container , myType , defMaxSize>::operator[](int pos)
+{
+	if(pos < 0 || pos >= curentSize) throw TemplateSheetOutOfRange();
+	return value[pos];		
+}
+
+template<template<class...> class Container , class myType , int defMaxSize>
+Sheet<Container , myType , defMaxSize>& Sheet<Container , myType , defMaxSize>::insert(myType obj , const int pos)
+{
+	if(pos < 0 || pos >= maxSize)throw TemplateSheetOutOfRange();
+	if(curentSize == maxSize)throw TemplateSheetOverflow();
+	auto it = value.begin() + pos - 1;
+	value.insert(it,obj);
+	return *this;
+}
+
+template<template<class...> class Container , class myType , int defMaxSize>
+Sheet<Container , myType , defMaxSize>& Sheet<Container , myType , defMaxSize>::replace(myType obj, const int pos)
+{
+	if(pos < 0 || pos >= maxSize)throw TemplateSheetOutOfRange();
+	value[pos] = obj;
+	return *this;
+}
+
+template<template<class...> class Container , class myType , int defMaxSize>
+int Sheet<Container , myType , defMaxSize>::search(const myType& obj)const
+{
+	for(auto i = value.begin(); i !=  value.end(); i ++ )
+	{
+		if(*i == obj) return value.end() - i;
+	}	
+	return -1;
+}
+
+#endif
+
